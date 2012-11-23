@@ -8,26 +8,29 @@ This library provides access to the Moovatom online video processing and streami
 2. Getting the status of a current encoding
 3. Getting the details of a completed encoding
 4. Canceling an encoding job
-5. Editing the attributes of your video player
+5. Deleting an encoding job
+6. Editing the attributes of your video player
+7. Searching for videos you've already encoded
 
 The entire library is contained in a single file. So installation is as simple as adding the file to your app and then requiring it wherever it's needed.
 
-The library consists of two classes: `Moovatom_Player` and `Moovatom`. The first is responsible for storing all the attributes related to the video player that will be embedded on the front end of your site. The second defines one constant and five action methods that interact with Moovatom's RESTful API. The constant `API_URL` defines the URL to which the JSON or XML requests must be POST'd. There are 12 instance variables used to communicate with Moovatom's servers:
+The library consists of two classes: `Moovatom_Player` and `Moovatom`. The first is responsible for storing all the attributes related to the video player that will be embedded on the front end of your site. The second defines one constant and five action methods that interact with Moovatom's RESTful API. The constant `API_URL` defines the URL to which the JSON or XML requests must be POST'd. There are 13 instance variables used to communicate with Moovatom's servers:
 
 1. `uuid`
 2. `username`
 3. `userkey`
 4. `content_type`
-5. `title`
-6. `blurb`
-7. `sourcefile`
-8. `callbackurl`
-9. `format`
-10. `player`
-11. `action`
-12. `response`
+5. `search_term`
+6. `title`
+7. `blurb`
+8. `sourcefile`
+9. `callbackurl`
+10. `format`
+11. `player`
+12. `action`
+13. `response`
 
-`response` will always contain the last response received from the Moovatom servers and `action` will be set by each of the action methods explained below. `player` is a instance of the `Moovatom_Player` class that provides access to the player attributes for your video. The remaining nine variables correspond to the attributes of the video you want to control as well as your specific Moovatom account credentials. These attributes can be set in a number of ways depending upon the needs of your specific application.
+`response` will always contain the last response received from the Moovatom servers and `action` will be set by each of the action methods explained below. `player` is a instance of the `Moovatom_Player` class that provides access to the player attributes for your video. The remaining ten variables correspond to the attributes of the video you want to control as well as your specific Moovatom account credentials. These attributes can be set in a number of ways depending upon the needs of your specific application.
 
 Instantiating a new (empty) object to communicate with the MoovAtom API is as simple as:
 
@@ -36,7 +39,7 @@ require '/path/to/moovatom.php';
 $me = new Moovatom();
 ```
 
-The object created in the code above isn't very useful though. A Moovatom object created without any arguments will, however, receive a few default values. `content_type` will be initialized with a value of 'video', `format` will be set to 'json' and `player` will be initialized as an empty `Moovatom_Player` instance when no arguments are provided. The remaining nine variables need to be set with the credentials for your Moovatom account and the specifics about the video you wish to control. Aside from creating an empty object, as we did above, I've tried to include as much flexibility as I could when it comes to creating a new Moovatom object. You can pass one or two associative arrays to the constructor containing the values you wish to be set for either player or video attributes. The first array will be used to setup video attributes and your Moovatom account credentials. The second is used to initialize the player attributes.
+The object created in the code above isn't very useful though. A Moovatom object created without any arguments will, however, receive a few default values. `content_type` will be initialized with a value of 'video', `format` will be set to 'json' and `player` will be initialized as an empty `Moovatom_Player` instance when no arguments are provided. The remaining ten variables need to be set with the credentials for your Moovatom account and the specifics about the video you wish to control. Aside from creating an empty object, as we did above, I've tried to include as much flexibility as I could when it comes to creating a new Moovatom object. You can pass one or two associative arrays to the constructor containing the values you wish to be set for either player or video attributes. The first array will be used to setup video attributes and your Moovatom account credentials. The second is used to initialize the player attributes.
 
 ```php
 You can pass literal arrays:
@@ -52,15 +55,17 @@ The library has been designed to be highly customizable. You are free to create 
 
 # Action Methods
 
-The `Moovatom` class has five methods that have been designed to interact directly with the RESTful API implemented by Moovatom's servers:
+The `Moovatom` class has seven methods that have been designed to interact directly with the RESTful API implemented by Moovatom's servers:
 
 1. `fetch_details()` will return details about an encoded video
 2. `fetch_status()` will return the status of a video (e.g. - whether or not encoding has completed)
 3. `encode()` will start a new encoding job
 4. `cancel()` will cancel an __unfinished__ encoding job
-5. `edit_player()` changes the attributes of your video's online player
+5. `delete()` will delete a __finished__ encoding job
+6. `edit_player()` changes the attributes of your video's online player
+7. `media_search()` returns videos based on the search terms you've provided
 
-Each of these methods are almost identical. They all accept an associative array argument similar to the constructor. The main difference is that the action methods will accept only one array. This allows you to easily reuse a `Moovatom` object to request information about different videos. The five action methods are able to be used and reused because they share a method that handles the heavy lifting when building and sending the request to Moovatom: `send_request()`. The `send_request()` method takes every variable (including player attributes) and creates a single array containing the key/value attributes for your video. It then uses the `format` and `action` variables to build and POST the appropriate request to the Moovatom servers. If the response is successful it will parse the JSON or XML into a Standard Object and store it in the `response` variable.
+Each of these methods are almost identical. They all accept an associative array argument similar to the constructor. The main difference is that the action methods will accept only one array. This allows you to easily reuse a `Moovatom` object to request information about different videos. The seven action methods are able to be used and reused because they share a method that handles the heavy lifting when building and sending the request to Moovatom: `send_request()`. The `send_request()` method takes every variable (including player attributes) and creates a single array containing the key/value attributes for your video. It then uses the `format` and `action` variables to build and POST the appropriate request to the Moovatom servers. If the response is successful it will parse the JSON or XML into a Standard Object and store it in the `response` variable.
 
 For more specific information about the Moovatom API please see the [documentation](http://moovatom.com/support/v2/api.html).
 
@@ -79,7 +84,7 @@ $me = new Moovatom( array(
 $me->fetch_details();
 ```
 
-A details request will POST the __uuid__, __username__ and __userkey__ variables from your `Moovatom` object using the `send_request()` method. If successful `response` will contain a Standard Object ready to be queried and used.
+A details request will POST the __uuid__, __username__ and __userkey__ variables from your `Moovatom` object. If successful `response` will contain a Standard Object ready to be queried and used.
 
 *Successful fetch_details() JSON Response:*
 
@@ -174,7 +179,7 @@ if ( ! $me->response->processing ) {
 }
 ```
 
-A status request will POST the __uuid__, __username__ and __userkey__ variables from your `Moovatom` object using the `send_request()` method. The `response` variable will contain either a success or error response:
+A status request will POST the __uuid__, __username__ and __userkey__ variables from your `Moovatom` object. The `response` variable will contain either a success or error response:
 
 *Status Success Response:*
 
@@ -217,7 +222,7 @@ $me = new Moovatom( array(
 $me->encode();
 ```
 
-An encode request will POST the __username__, __userkey__, __content type__, __title__, __blurb__, __sourcefile__ and __callbackurl__ variables from your `Moovatom` object using the `send_request()` method. The body of the Moovatom response will contain the uuid assigned by Moovatom's servers to this new video as well as a message stating whether or not your job was started successfully:
+An encode request will POST the __username__, __userkey__, __content type__, __title__, __blurb__, __sourcefile__ and __callbackurl__ variables from your `Moovatom` object. The body of the Moovatom response will contain the uuid assigned by Moovatom's servers to this new video as well as a message stating whether or not your job was started successfully:
 
 *Encode Started Response:*
 
@@ -228,7 +233,7 @@ An encode request will POST the __username__, __userkey__, __content type__, __t
 }
 ```
 
-After a successful response the `uuid` variable of your `Moovatom` object will be set to the uuid assigned by Moovatom. The encode action implemented on Moovatom's servers differs slightly from the other four actions. Once the encoding is complete Moovatom's servers will send a response to the callback URL you set in the `callbackurl` variable. Your app should define a controller or action of some sort that will process these callbacks to save/update the video's details in your database. The body of the callback sent by Moovatom looks exactly like the response from a `fetch_details()` request.
+After a successful response the `uuid` variable of your `Moovatom` object will be set to the uuid assigned by Moovatom. The encode action implemented on Moovatom's servers differs slightly from the other six actions. Once the encoding is complete, Moovatom's servers will send a response to the callback URL you set in the `callbackurl` variable. Your app should define a controller or action of some sort that will process these callbacks to save/update the video's details in your database. The body of the callback sent by Moovatom looks exactly like the response from a `fetch_details()` request.
 
 Additionally, the video you are uploading to Moovatom must be in a __publicly accessibly location__. Moovatom will attempt to transfer that video from the url you define in the `sourcefile` variable. The ability to upload a video directly is planned for a future version of the API and this library.
 
@@ -236,7 +241,7 @@ For more specific information about the Moovatom API please see the [documentati
 
 ## Cancel
 
-If you decide, for whatever reason, that you no longer need or want a specific video on Moovatom you can cancel its encoding anytime __before it finishes__ using the `cancel()` method. A cancel request will POST the __uuid__, __username__ and __userkey__ instance variables from your `Moovatom` object using the `send_request()` method. The body of the Moovatom response will contain a message telling you whether or not you successfully canceled your video:
+If you decide, for whatever reason, that you no longer need or want a specific video on Moovatom you can cancel its encoding anytime __before it finishes__ using the `cancel()` method. A cancel request will POST the __uuid__, __username__ and __userkey__ instance variables from your `Moovatom` object. The body of the Moovatom response will contain a message telling you whether or not you successfully canceled your video:
 
 ```php
 $me = new Moovatom( array(
@@ -262,7 +267,33 @@ if ( $me->response->processing ) {
 }
 ```
 
-*__NOTE:__ There is currently no way to delete a video from your Moovatom account that has completed encoding without manually logging in and deleting it yourself. The ability to delete through the API will be available in the future.*
+## Delete
+
+If you decide, for whatever reason, that you no longer need or want a specific video on Moovatom you can delete its encoding anytime __after it finishes__ using the `delete()` method. A delete request will POST the __uuid__, __username__ and __userkey__ instance variables from your `Moovatom` object. The body of the Moovatom response will contain a message telling you whether or not you've successfully deleted your video:
+
+```php
+$me = new Moovatom( array(
+  'uuid'     => 'j9i8h7g6f5e4d3c2b1a',
+  'username' => 'USERNAME',
+  'userkey'  => 'a1b2c3d4e5f6g7h8i9j'
+  )
+);
+
+$me->get_status();
+
+if ( ! $me->response->processing ) {
+  $me->delete();
+}
+```
+
+*Example delete request response:*
+
+```
+{
+    "uuid": "UUID",
+    "message": "Your media was successfully deleted."
+}
+```
 
 ## Edit Player
 
@@ -318,6 +349,116 @@ $me->player->button_color = '#889AA4';
 $me->player->time_color = '#01DAFF';
 
 $me->edit_player();
+```
+
+## Media Search
+
+The `media_search()` action method allows you to query the videos you've uploaded to and encoded on Moovatom's servers using search terms entered into the `search_term` variable. A media_search request will POST the __username__, __userkey__ and __search_term__ instance variables from your MoovEngine object. The body of the Moovatom response will be similar to a details request:
+
+```php
+$me = new Moovatom( array(
+  'username' => 'USERNAME',
+  'userkey'  => 'a1b2c3d4e5f6g7h8i9j',
+  'search_term' => 'dolphin'
+  )
+);
+
+$me->media_search();
+```
+
+*Example media search request response:*
+
+```
+{
+    "result_count": "1",
+    "user": "USERNAME",
+    "results": [
+        {
+            "uuid": "UUID",
+            "title": "Dolphin Training",
+            "summary": "How to train your dolphin like a pro.",
+            "duration": "45.347",
+            "media_type": "video",
+            "embed_code": "EMBED CODE IFRAME FOR SMART SWITCHING",
+            "iframe_target": "http://www.moovatom.com/media/embed/ID",
+            "original_download": "http://www.moovatom.com/media/download/orig/UUID",
+            "versions": [
+                {
+                    "name": "sample",
+                    "type": "video/mp4",
+                    "holdframe_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "holdframe_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "rtmp_stream": "rtmp://media.moovatom.com/PATH_TO_FILE",
+                    "http_stream": "http://media.moovatom.com:1935/PATH_TO_FILE",
+                    "rtsp_stream": "rtsp://media.moovatom.com:1935/PATH_TO_FILE",
+                    "download": "http://www.moovatom.com/PATH_TO_FILE"
+                },
+                {
+                    "name": "mobile",
+                    "type": "video/mp4",
+                    "holdframe_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "holdframe_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "rtmp_stream": "rtmp://media.moovatom.com/PATH_TO_FILE",
+                    "http_stream": "http://media.moovatom.com:1935/PATH_TO_FILE",
+                    "rtsp_stream": "rtsp://media.moovatom.com:1935/PATH_TO_FILE",
+                    "download": "http://www.moovatom.com/PATH_TO_FILE"
+                },
+                {
+                    "name": "mobile_large",
+                    "type": "video/mp4",
+                    "holdframe_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "holdframe_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "rtmp_stream": "rtmp://media.moovatom.com/PATH_TO_FILE",
+                    "http_stream": "http://media.moovatom.com:1935/PATH_TO_FILE",
+                    "rtsp_stream": "rtsp://media.moovatom.com:1935/PATH_TO_FILE",
+                    "download": "http://www.moovatom.com/PATH_TO_FILE"
+                },
+                {
+                    "name": "small",
+                    "type": "video/mp4",
+                    "holdframe_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "holdframe_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "rtmp_stream": "rtmp://media.moovatom.com/PATH_TO_FILE",
+                    "http_stream": "http://media.moovatom.com:1935/PATH_TO_FILE",
+                    "rtsp_stream": "rtsp://media.moovatom.com:1935/PATH_TO_FILE",
+                    "download": "http://www.moovatom.com/PATH_TO_FILE"
+                },
+                {
+                    "name": "medium",
+                    "type": "video/mp4",
+                    "holdframe_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "holdframe_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "rtmp_stream": "rtmp://media.moovatom.com/PATH_TO_FILE",
+                    "http_stream": "http://media.moovatom.com:1935/PATH_TO_FILE",
+                    "rtsp_stream": "rtsp://media.moovatom.com:1935/PATH_TO_FILE",
+                    "download": "http://www.moovatom.com/PATH_TO_FILE"
+                },
+                {
+                    "name": "large",
+                    "type": "video/mp4",
+                    "holdframe_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_download": "http://www.moovatom.com/PATH_TO_FILE",
+                    "holdframe_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "thumbnail_serve": "http://static.moovatom.com/PATH_TO_FILE",
+                    "rtmp_stream": "rtmp://media.moovatom.com/PATH_TO_FILE",
+                    "http_stream": "http://media.moovatom.com:1935/PATH_TO_FILE",
+                    "rtsp_stream": "rtsp://media.moovatom.com:1935/PATH_TO_FILE",
+                    "download": "http://www.moovatom.com/PATH_TO_FILE"
+                }
+            ]
+        }
+    ]
+}
 ```
 
 For more specific information about the Moovatom API please see the [documentation](http://moovatom.com/support/v2/api.html).
