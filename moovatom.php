@@ -320,6 +320,7 @@ class Moovatom {
             Blurb:        $this->blurb<br />
             Source File:  $this->sourcefile<br />
             Callback URL: $this->callbackurl<br />
+            Search Term:  $this->search_term<br />
             Action:       $this->action<br />
             Format:       $this->format<br />";
   }
