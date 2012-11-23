@@ -225,6 +225,26 @@ class Moovatom {
   }
 
   /**
+   * The delete() method allows you to delete a video that's finished encoded
+   * on the Moovatom servers. It is almost identical to the fetch_details() and
+   * fetch_status() methods. You can pass the same type/combination of arguments
+   * and it sets the $this->action instance variable to 'delete' for you.
+   *
+   * See README for specific examples
+   */
+  
+  public function delete( $attrs = array() ) {
+    $this->action = 'delete';
+
+    // parse passed in attributes
+    if ( $attrs )
+      foreach ( $attrs as $key => $value )
+        $this->__set( $key, $value );
+
+    $this->send_request();
+  }
+
+  /**
    * The edit_player() method allows you to change the player attributes for
    * your videos on moovatom's servers. It accepts an array of player attributes
    * used to update the $this->player instance variable created during initialization.
@@ -235,6 +255,26 @@ class Moovatom {
   
   public function edit_player( $attrs = array() ) {
     $this->action = 'edit_player';
+
+    // parse passed in attributes
+    if ( $attrs )
+      foreach ( $attrs as $key => $value )
+        $this->__set( $key, $value );
+
+    $this->send_request();
+  }
+
+  /**
+   * The media_search() method allows you to search for a video on the
+   * Moovatom servers. It is almost identical to the fetch_details() and
+   * fetch_status() methods. You can pass the same type/combination of arguments
+   * and it also sets the $this->action instance variable to 'media_search' for you.
+   *
+   * See README for specific examples
+   */
+  
+  public function media_search( $attrs = array() ) {
+    $this->action = 'media_search';
 
     // parse passed in attributes
     if ( $attrs )

@@ -21,6 +21,7 @@
     'blurb'        => '', // The description of a new video encoding. Used by encode()
     'sourcefile'   => '', // The publicly accessible location of the video file used in a new video encoding. Used by encode()
     'callbackurl'  => '', // The URL on your server that records the details of a new video encoding once it's finished. Used by encode()
+    'search_term'  => '', // The video attributes you'd like to search for. Used by media_search()
     'format'       => ''  // The format (JSON or XML) of the response from Moovatom. Defaults to JSON, used by all action methods
   );
 
@@ -60,8 +61,14 @@
   // to cancel a new encoding job that hasn't finished yet:
   // $moovatom->cancel();
 
+  // to delete an existing video that has finished encoding:
+  // $moovatom->delete();
+
   // to edit the attributes of your video player:
   // $moovatom->edit_player();
+
+  // to search for videos that have finished encoded:
+  // $moovatom->media_search();
 
 ?>
 
@@ -79,8 +86,17 @@
     <p><?php echo $moovatom->player; ?></p>
   </div>
   <div id="main_bottom">
-    <h2>Video Content:</h2>
-    <?php echo $moovatom->response->embed_code ?>
+    
+    <?php
+      if ( $moovatom->response->embed_code ) {
+        echo '<h2>Video Content:</h2>';
+        echo $moovatom->response->embed_code;
+      } else {
+        echo '<h2>Response Object:</h2>';
+        var_dump( $moovatom->response );
+      }
+    ?>
+    
   </div>
 </div>
 
